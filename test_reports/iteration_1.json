@@ -1,0 +1,47 @@
+{
+  "summary": "Tested GOLDEN demo app (FastAPI + React + Leaflet) and Moodle plugin ZIP. Backend: 9/9 pytest passed (courses=8, students=450, course filter, grade range, stats overall + course-scoped, hotspots, plugin-info, ZIP download). Frontend landing page: hero title, 3 CTAs, 6 features, 4 install steps all render correctly; ZIP downloads (15183 bytes, valid PK, contains all 8 required Moodle files). Dashboard: loads, KPIs populated (450 / 34 countries / 70.5 avg / 8 courses), top countries list, grade distribution chart, cluster markers, choropleth mode all verified via screenshots. Discovered ONE real UI bug: course dropdown's z-index conflicts with the Visualization ToggleGroup beneath it — clicks on middle dropdown options get intercepted by the mode-choropleth toggle button.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "Dashboard course filter Select dropdown",
+        "issue": "SelectContent uses z-50 (in /app/frontend/src/components/ui/select.jsx line 55) but the left sidebar/aside that hosts the Select is z-[999]. Even though Radix portals to <body>, the visualization ToggleGroup (Cluster/Grade/Hotspot buttons) inherits the sidebar's stacking context and intercepts pointer-events for dropdown items that visually overlap it. Result: courses CS305, MATH210, STAT240, GIS410, ENG150, PHY220 (the middle options that render behind the ToggleGroup) cannot be clicked by a real user. Only CS101 (top, above toggle) and BIO330 (bottom, below) are clickable. Same issue may affect the grade-range slider area.",
+        "selector": "[data-testid='course-opt-CS305'] (and similar middle options)",
+        "priority": "HIGH"
+      }
+    ],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_golden_api.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [
+    "Fix Select dropdown z-index: in /app/frontend/src/components/ui/select.jsx line 55, change `z-50` to `z-[1100]` (or any value > 999) on SelectContent so the portalled menu visually and interactively sits above the sidebar/toggle/slider stack. Verify by opening course dropdown and clicking CS305 / MATH210 / STAT240 — student count KPI should drop below 450."
+  ],
+  "critical_code_review_comments": [
+    "select.jsx z-50 vs sidebar z-[999]: dropdown options are visually rendered but unclickable where they overlap the toggle group / slider — primary functional bug.",
+    "Dashboard.jsx useEffect on [courseId, gradeRange] re-fetches all 3 endpoints (students, stats, hotspots) on every change — fine for 450 records but consider debouncing the slider (currently fires on every step) to reduce backend load on larger datasets.",
+    "Backend /api/students has no pagination and does .to_list(2000) — acceptable for demo (max 450 records) but document the cap.",
+    "@app.on_event('startup') is deprecated in newer FastAPI; consider lifespan handlers (non-blocking, demo-quality).",
+    "MapContainer in Dashboard.jsx receives data-testid prop but react-leaflet doesn't forward it to the rendered DOM — testing requires '.leaflet-container' selector instead. Cosmetic but affects test discoverability."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_golden_api.py (created)",
+    "/app/test_reports/iteration_1.json (created)"
+  ],
+  "success_rate": {
+    "backend": "100%",
+    "frontend": "90%"
+  },
+  "test_credentials": "N/A — public demo, no auth",
+  "seed_data_creation": "Backend self-seeds 8 courses + 450 students on startup via seed_if_empty(). Verified populated.",
+  "retest_needed": true,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Backend is fully green. Only the SelectContent z-index needs to be raised. After fix, retest by: (1) opening dashboard, (2) clicking course-select, (3) clicking course-opt-CS305 (a middle option) — students KPI must drop below 450. Hotspot mode and CSV export look correct in code review (HeatLayer adds canvas, exportCSV builds blob+download), partial UI verification done; full interactive verification was blocked because the dropdown bug derailed the same playwright session, but those flows are simple and main agent can self-verify.",
+  "rca of the issue": "ROOT CAUSE: shadcn's default SelectContent (line 55 of /app/frontend/src/components/ui/select.jsx) sets className 'z-50'. The Dashboard's left aside is 'absolute ... z-[999]'. Radix UI portals SelectContent to document.body, but the z-index value travels with it, so the portalled menu has z=50 in the body stacking context while the sidebar — also a child of body — has z=999. Therefore any sibling element inside the sidebar (the ToggleGroup or Slider) that visually overlaps the open dropdown will intercept pointer events. REPRO: Visit /dashboard, click 'All courses' dropdown, observe items render but clicks on middle items hit the Cluster/Grade/Hotspot buttons behind. FIX: Raise SelectContent z-index above the sidebar, e.g., 'z-[1100]'. One-line change."
+}

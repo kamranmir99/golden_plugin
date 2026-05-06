@@ -1,0 +1,44 @@
+/* GOLDEN plugin styles */
+#golden-root {
+  position: relative;
+  width: 100%;
+  height: calc(100vh - 120px);
+  min-height: 640px;
+  background: #0A0C10;
+  color: #fff;
+  font-family: 'IBM Plex Sans', -apple-system, sans-serif;
+}
+.golden-map { position: absolute; inset: 0; z-index: 0; }
+.golden-sidebar {
+  position: absolute; top: 16px; left: 16px; bottom: 16px; z-index: 500;
+  width: 300px; display: flex; flex-direction: column; gap: 12px;
+}
+.golden-panel {
+  background: rgba(20, 23, 31, 0.82); backdrop-filter: blur(18px);
+  border: 1px solid #282D3D; border-radius: 8px; padding: 16px;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.4);
+}
+.golden-label { font-family: 'IBM Plex Mono', monospace; font-size: 10px; text-transform: uppercase;
+  letter-spacing: 0.15em; color: #666F7F; margin-bottom: 10px; }
+.golden-sublabel { font-family: 'IBM Plex Mono', monospace; font-size: 10px; text-transform: uppercase;
+  letter-spacing: 0.15em; color: #A1A8B4; margin-top: 12px; margin-bottom: 4px; display: block; }
+.golden-kpis { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.golden-kpi-label { font-family: 'IBM Plex Mono', monospace; font-size: 9px; color: #666F7F;
+  text-transform: uppercase; letter-spacing: 0.15em; display: block; margin-bottom: 2px; }
+.golden-kpi { font-family: 'IBM Plex Mono', monospace; font-size: 22px; font-weight: 700; color: #fff; }
+.golden-accent { color: #00E5FF !important; }
+.golden-input { width: 100%; background: #0A0C10; border: 1px solid #282D3D; color: #fff;
+  padding: 8px 10px; border-radius: 6px; font-size: 13px; }
+.golden-toggle { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px;
+  background: #0A0C10; border: 1px solid #282D3D; border-radius: 6px; padding: 4px; }
+.golden-toggle button { background: transparent; border: 0; color: #A1A8B4; font-size: 11px;
+  padding: 6px 4px; border-radius: 4px; cursor: pointer; }
+.golden-toggle button.is-active { background: #282D3D; color: #fff; }
+.golden-range { display: grid; grid-template-columns: 1fr auto 1fr auto; gap: 6px; align-items: center; }
+.golden-btn-primary { background: #00E5FF; color: #000; border: 0; padding: 8px 12px; border-radius: 6px;
+  font-weight: 600; cursor: pointer; font-size: 12px; }
+.golden-list { list-style: none; padding: 0; margin: 0; font-size: 13px; }
+.golden-list li { display: flex; justify-content: space-between; padding: 4px 6px; border-radius: 4px; }
+.golden-list li:hover { background: #282D3D; }
+.golden-list .count { font-family: 'IBM Plex Mono', monospace; color: #00E5FF; font-size: 11px; }
+.leaflet-container { background: #0F1115 !important; }
