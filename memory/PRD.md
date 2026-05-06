@@ -27,10 +27,17 @@ Build a Moodle plugin ("GOLDEN" – **G**eospatial m**O**de**L** for **D**istanc
 - Course filter, grade-range slider, CSV export, top-countries + distribution analytics.
 - Seeded MongoDB with realistic geo-distributed student data.
 
+## Done (2026-02-06 — iter 2)
+- **Country-polygon choropleth**: 177-country GeoJSON layer (Natural Earth 110m) shaded by grade. Hover tooltip shows country + students + avg grade.
+- **Drill-through**: Click a country polygon OR a "Top countries" list item to open a Sheet with a Table of all students in that country (name / city / IP / grade).
+- **Date-range cohort filter**: shadcn Calendar Popover with two-month range mode, integrated with `last_access_from/to` query params on every endpoint.
+- **Moodle CI**: `.github/workflows/moodle-ci.yml` runs `moodle-plugin-ci` (codechecker, phpunit, behat, validate, phpdoc, mustache, grunt) across PHP 8.1/8.2 × Moodle 4.3/4.4/main.
+- **Privacy provider** added (`local_golden\privacy\provider` as `null_provider`) for plugin-checker compliance.
+- Plugin version bumped to `2026020200`. Repackaged ZIP.
+
 ## Backlog
-- P1: Admin authentication on the demo (currently publicly viewable).
-- P1: Real country polygon choropleth (TopoJSON overlay) instead of coloured points.
-- P2: Date-range filter (enrolment cohort, last-access window).
-- P2: Drill-through from country to student list (right-panel table).
-- P2: Moodle plugin: CI workflow + plugin-checker compliance tests.
-- P2: Support IPv6 + proxy header trust list configurable in settings.
+- P1: add admin authentication to the demo dashboard.
+- P2: drill from polygon-hover into hotspot break-down.
+- P2: support IPv6 + proxy header trust list configurable in plugin settings.
+- P3: migrate FastAPI startup event → lifespan handler.
+- P3: replace string-comparison date filter with stored datetime values.
