@@ -92,5 +92,9 @@ echo $OUTPUT->header();
   </aside>
 </div>
 <script src="<?php echo new moodle_url('/local/golden/amd/src/map.js'); ?>"></script>
+<div class="golden-credit">
+  <span>GOLDEN — maintained by <strong>Kamran Mir</strong>, IGIS, National University of Sciences and Technology (NUST), Islamabad, Pakistan ·
+    <a href="mailto:kmir.phd21igis@student.nust.edu.pk">kmir.phd21igis@student.nust.edu.pk</a></span>
+</div>
 <?php
 echo $OUTPUT->footer();

@@ -27,3 +27,7 @@ $string['all_courses']          = 'All courses';
 $string['geoip_missing']        = 'GeoLite2-City.mmdb not found at {$a}. Please download it from https://www.maxmind.com/ and place it in the configured path (or update plugin settings).';
 $string['no_data']              = 'No geolocatable users were found. Ensure users have logged in at least once so Moodle has populated the <code>lastip</code> column.';
 $string['privacy:metadata']     = 'The GOLDEN plugin reads the existing lastip column of mdl_user and resolves it to coordinates with a local MaxMind GeoLite2 database. No data is sent outside this Moodle server.';
+$string['author']               = 'Kamran Mir';
+$string['author_affiliation']   = 'Institute of Geographical Information Systems (IGIS), National University of Sciences and Technology (NUST), Islamabad, Pakistan';
+$string['author_email']         = 'kmir.phd21igis@student.nust.edu.pk';
+$string['footer_credit']        = 'GOLDEN — maintained by {$a->name}, {$a->affiliation}';

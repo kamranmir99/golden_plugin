@@ -141,17 +141,38 @@ export default function Landing() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-[#282D3D] py-8 px-6">
-        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="font-mono text-xs text-[#666F7F] uppercase tracking-[0.15em]">
-            GOLDEN · Geospatial mOdeL for Distance EducatioN · MIT
+      <footer className="border-t border-[#282D3D] py-10 px-6" data-testid="landing-footer">
+        <div className="max-w-6xl mx-auto grid sm:grid-cols-2 gap-6 items-start">
+          <div>
+            <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#666F7F] mb-2">// Maintained by</div>
+            <div className="font-heading font-bold text-base text-white" data-testid="contributor-name">Kamran Mir</div>
+            <div className="text-xs text-[#A1A8B4] leading-relaxed mt-1">
+              Institute of Geographical Information Systems (IGIS)<br />
+              National University of Sciences and Technology (NUST)<br />
+              Islamabad, Pakistan
+            </div>
+            <a
+              href="mailto:kmir.phd21igis@student.nust.edu.pk"
+              className="font-mono text-xs text-[#00E5FF] hover:text-[#33EFFF] transition-colors mt-2 inline-block"
+              data-testid="contributor-email"
+            >
+              kmir.phd21igis@student.nust.edu.pk
+            </a>
           </div>
-          <div className="flex items-center gap-4 text-xs text-[#666F7F]">
-            <span className="font-mono">Moodle 4.3+</span>
-            <span>·</span>
-            <span className="font-mono">PHP 8.1+</span>
-            <span>·</span>
-            <a href="#" className="hover:text-white transition-colors inline-flex items-center gap-1"><Github className="w-3 h-3" /> Source</a>
+          <div className="sm:text-right">
+            <div className="font-mono text-xs text-[#666F7F] uppercase tracking-[0.15em] mb-2">
+              GOLDEN · Geospatial mOdeL for Distance EducatioN
+            </div>
+            <div className="flex sm:justify-end items-center gap-3 text-xs text-[#666F7F]">
+              <span className="font-mono">Moodle 4.3+</span>
+              <span>·</span>
+              <span className="font-mono">PHP 8.1+</span>
+              <span>·</span>
+              <span className="font-mono">GPL v3</span>
+            </div>
+            <a href="#" className="text-xs text-[#666F7F] hover:text-white transition-colors inline-flex items-center gap-1 mt-2">
+              <Github className="w-3 h-3" /> Source
+            </a>
           </div>
         </div>
       </footer>

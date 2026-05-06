@@ -65,3 +65,11 @@ requests are made to third-party services.
 ## License
 
 GPL v3 or later, matching Moodle.
+
+## Author / Maintainer
+
+**Kamran Mir**
+Institute of Geographical Information Systems (IGIS)
+National University of Sciences and Technology (NUST)
+Islamabad, Pakistan
+✉ <kmir.phd21igis@student.nust.edu.pk>
