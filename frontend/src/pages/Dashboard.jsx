@@ -174,7 +174,7 @@ export default function Dashboard() {
       </nav>
 
       {/* LEFT SIDEBAR */}
-      <aside className="absolute top-20 left-4 bottom-4 z-[999] w-80 flex flex-col gap-4 pointer-events-none" data-testid="left-sidebar">
+      <aside className="absolute top-20 left-4 bottom-4 z-[400] w-80 flex flex-col gap-4 pointer-events-none" data-testid="left-sidebar">
         {/* KPIs */}
         <div className="glass-panel rounded-lg p-5 pointer-events-auto" data-testid="kpi-panel">
           <div className="font-mono text-[10px] uppercase tracking-[0.15em] text-[#666F7F] mb-3">// Key metrics</div>
@@ -195,7 +195,7 @@ export default function Dashboard() {
             <SelectTrigger className="bg-[#0A0C10] border-[#282D3D] text-white h-10" data-testid="course-select">
               <SelectValue placeholder="All courses" />
             </SelectTrigger>
-            <SelectContent className="bg-[#14171F] border-[#282D3D] text-white">
+            <SelectContent className="bg-[#14171F] border-[#282D3D] text-white z-[1200]">
               <SelectItem value="all" data-testid="course-opt-all">All courses</SelectItem>
               {courses.map((c) => (
                 <SelectItem key={c.id} value={c.id} data-testid={`course-opt-${c.code}`}>
@@ -275,7 +275,7 @@ export default function Dashboard() {
 
       {/* RIGHT SIDEBAR */}
       <aside
-        className={`absolute top-20 right-4 bottom-4 z-[999] w-80 flex flex-col gap-4 pointer-events-none transition-transform duration-300 ${rightOpen ? "translate-x-0" : "translate-x-[110%]"}`}
+        className={`absolute top-20 right-4 bottom-4 z-[400] w-80 flex flex-col gap-4 pointer-events-none transition-transform duration-300 ${rightOpen ? "translate-x-0" : "translate-x-[110%]"}`}
         data-testid="right-sidebar"
       >
         <div className="glass-panel rounded-lg p-5 pointer-events-auto flex-1 overflow-auto">
