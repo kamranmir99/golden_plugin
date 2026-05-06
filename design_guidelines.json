@@ -1,0 +1,140 @@
+{
+  "theme": "dark",
+  "archetype": "Archetype 4 (Swiss & High-Contrast)",
+  "emotional_tone": "Analytical, Precise, Authoritative, Global",
+  "domain": "WebGIS Educational Dashboard & Landing Page",
+  "design_concept": "The map is the hero. Utilizing a 'Control Room' structure where the primary canvas is an edge-to-edge interactive map, overlaid with floating, technical glassmorphism panels. The design mimics professional GIS software (like Kepler.gl or CARTO) rather than standard SaaS.",
+  "colors": {
+    "background": {
+      "base": "#0A0C10",
+      "panel": "#14171F",
+      "panel_glass": "rgba(20, 23, 31, 0.75)",
+      "map_water": "#0F1115",
+      "map_land": "#1C202A"
+    },
+    "typography": {
+      "primary": "#FFFFFF",
+      "secondary": "#A1A8B4",
+      "tertiary": "#666F7F",
+      "on_accent": "#000000"
+    },
+    "accents": {
+      "primary": "#00E5FF",
+      "primary_hover": "#33EFFF",
+      "secondary": "#FFAB00",
+      "border": "#282D3D",
+      "border_highlight": "#00E5FF"
+    },
+    "map_scales": {
+      "choropleth_sequential": [
+        "#0A2530",
+        "#114659",
+        "#166E87",
+        "#0CB2CC",
+        "#00E5FF"
+      ],
+      "hotspot_diverging": [
+        "#4A0080",
+        "#B20066",
+        "#E63900",
+        "#FFAB00",
+        "#FFEA00"
+      ],
+      "cluster_marker": "#FFAB00"
+    }
+  },
+  "typography": {
+    "font_families": {
+      "heading": "Chivo",
+      "body": "IBM Plex Sans",
+      "mono": "IBM Plex Mono"
+    },
+    "hierarchy": {
+      "h1": "text-4xl sm:text-5xl tracking-tighter font-black",
+      "h2": "text-2xl sm:text-3xl tracking-tight font-bold",
+      "h3": "text-xl sm:text-2xl font-semibold",
+      "kpi_value": "text-3xl font-bold font-mono tracking-tight",
+      "body": "text-sm text-secondary",
+      "label": "text-xs font-mono uppercase tracking-[0.1em] text-tertiary"
+    }
+  },
+  "spacing_and_layout": {
+    "strategy": "Dense data arrays within floating panels. High negative space over the map area to let the geographic data breathe.",
+    "container_padding": "p-6",
+    "grid_gaps": "gap-4",
+    "border_radius": {
+      "panels": "rounded-lg",
+      "buttons": "rounded-md",
+      "inputs": "rounded-md"
+    },
+    "layout_structure": {
+      "map_canvas": "absolute inset-0 z-0",
+      "top_nav": "absolute top-0 left-0 right-0 z-50 h-16 bg-panel_glass backdrop-blur-xl border-b border-border flex items-center px-6",
+      "left_sidebar": "absolute top-20 left-4 bottom-4 z-40 w-80 flex flex-col gap-4 pointer-events-none",
+      "right_sidebar": "absolute top-20 right-4 bottom-4 z-40 w-80 pointer-events-none transition-transform duration-300",
+      "bottom_legend": "absolute bottom-8 right-1/2 translate-x-1/2 z-40"
+    }
+  },
+  "components": {
+    "panels": {
+      "style": "bg-[#14171F]/80 backdrop-blur-xl border border-[#282D3D] shadow-2xl shadow-black/50 pointer-events-auto overflow-hidden",
+      "usage": "Use for the Left Sidebar (Filters/KPIs), Right Sidebar (Analytics), and Map Popups."
+    },
+    "kpi_strip": {
+      "style": "grid grid-cols-2 gap-4 border-b border-[#282D3D] pb-4 mb-4",
+      "item": "flex flex-col gap-1"
+    },
+    "map_popup": {
+      "style": "bg-[#14171F] border border-[#282D3D] rounded-lg shadow-xl p-4 min-w-[240px]",
+      "header": "border-b border-[#282D3D] pb-2 mb-2"
+    },
+    "controls": {
+      "slider": "accent-[#00E5FF]",
+      "toggle_group": "bg-[#0A0C10] p-1 rounded-md border border-[#282D3D]",
+      "toggle_item": "data-[state=on]:bg-[#282D3D] data-[state=on]:text-white text-secondary text-sm rounded-sm px-3 py-1.5 transition-colors"
+    },
+    "buttons": {
+      "primary": "bg-[#00E5FF] text-black hover:bg-[#33EFFF] font-semibold transition-colors",
+      "secondary": "bg-[#1C202A] text-white border border-[#282D3D] hover:bg-[#282D3D] transition-colors"
+    }
+  },
+  "motion_and_interaction": {
+    "panels": "Slide in from edges with a slight fade. Use transform-gpu for smooth rendering.",
+    "hover_states": "Interactive list items (like courses or countries) should have a bg-[#282D3D] highlight on hover.",
+    "map_interactions": "Smooth fly-to animations when clicking clusters or countries. Tooltips/popups fade in swiftly."
+  },
+  "media": {
+    "images": [
+      {
+        "category": "marketing_hero_bg",
+        "url": "https://static.prod-images.emergentagent.com/jobs/8e7c4ad4-d560-446b-b304-b06014738a53/images/deef9fbdc566da2ff200f525c329e19700344066d01a0be1afa979b6ba645046.png",
+        "description": "High-tech dark mode WebGIS dashboard visualization with neon amber and cyan accents."
+      },
+      {
+        "category": "marketing_section_bg",
+        "url": "https://static.prod-images.emergentagent.com/jobs/8e7c4ad4-d560-446b-b304-b06014738a53/images/36fb9b21f2983c524184c1e50b56bbad9034f088cb0f0ced97cb73f248c8e964.png",
+        "description": "Abstract dark geometric grid representing global distance education with glowing nodes."
+      },
+      {
+        "category": "globe_context_1",
+        "url": "https://images.unsplash.com/photo-1758242867442-ba3f5ceadae9?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NjZ8MHwxfHNlYXJjaHwzfHx1bml2ZXJzaXR5JTIwc3R1ZGVudCUyMG9ubGluZSUyMGxlYXJuaW5nJTIwT1IlMjBnbG9iYWwlMjBlZHVjYXRpb24lMjBtYXB8ZW58MHx8fHwxNzc4MDg4MTY2fDA&ixlib=rb-4.1.0&q=85",
+        "description": "Close-up of a colorful globe."
+      },
+      {
+        "category": "globe_context_2",
+        "url": "https://images.unsplash.com/photo-1774779685524-cc735ae11a9e?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NjZ8MHwxfHNlYXJjaHwyfHx1bml2ZXJzaXR5JTIwc3R1ZGVudCUyMG9ubGluZSUyMGxlYXJuaW5nJTIwT1IlMjBnbG9iYWwlMjBlZHVjYXRpb24lMjBtYXB8ZW58MHx8fHwxNzc4MDg4MTY2fDA&ixlib=rb-4.1.0&q=85",
+        "description": "Close-up view of a world map."
+      }
+    ]
+  },
+  "instructions_to_main_agent": [
+    "1. This is a dual-purpose application: A landing page describing the GOLDEN plugin, and the Dashboard itself. Build a routing structure or distinct views.",
+    "2. For the Dashboard: Use react-leaflet or a similar mapping library. Make the map occupy 100% of the screen height and width. Use a dark matter or dark base map tile (like CartoDB Dark Matter).",
+    "3. Build floating glassmorphism panels (using the 'panels.style' classes) that sit ON TOP of the map canvas using absolute positioning.",
+    "4. Implement mock data for student locations, grades (0-100), courses, and IPs to feed the map visualization.",
+    "5. Use Recharts for the Analytics panel (Top Countries bar chart, Grade Distribution histogram) applying the primary/secondary accent colors.",
+    "6. Landing page should be built using the provided `marketing_hero_bg` and `marketing_section_bg` media URLs. Use a highly technical, dark mode aesthetic for the marketing page to match the tool's vibe.",
+    "7. Font usage: Import `Chivo`, `IBM Plex Sans`, and `IBM Plex Mono` via Google Fonts. Map numbers, coordinates, and KPIs must use `IBM Plex Mono`.",
+    "8. Ensure every interactive element uses `data-testid` properties for robust testing."
+  ]
+}
