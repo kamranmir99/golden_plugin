@@ -81,6 +81,28 @@ body {
 ::-webkit-scrollbar-thumb { background: #282D3D; border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: #3a4154; }
 
+/* Leaflet tooltip override for choropleth hover */
+.golden-tooltip,
+.leaflet-tooltip {
+    background: #14171F !important;
+    color: #fff !important;
+    border: 1px solid #282D3D !important;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5) !important;
+    padding: 8px 10px !important;
+    font-family: 'IBM Plex Sans', sans-serif !important;
+}
+.leaflet-tooltip:before { border-top-color: #14171F !important; }
+
+/* Calendar (react-day-picker) dark theme tweaks */
+.rdp { --rdp-cell-size: 36px; color: #fff; padding: 12px; }
+.rdp-day_selected, .rdp-day_selected:focus-visible, .rdp-day_selected:hover {
+    background: #00E5FF !important; color: #000 !important;
+}
+.rdp-day_range_middle { background: rgba(0, 229, 255, 0.18) !important; color: #fff !important; }
+.rdp-day:hover:not(.rdp-day_selected) { background: #282D3D !important; }
+.rdp-head_cell { color: #666F7F; font-family: 'IBM Plex Mono', monospace; font-size: 10px; }
+.rdp-nav_button { color: #fff; }
+
 @layer base {
     :root {
         --background: 222 24% 5%;

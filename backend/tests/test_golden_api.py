@@ -106,3 +106,91 @@ def test_plugin_zip_downloadable(session):
     assert len(r.content) > 1000
     # ZIP magic bytes
     assert r.content[:2] == b"PK"
+
+
+# ---------- Iteration 2: country-stats ----------
+def test_country_stats_basic(session):
+    r = session.get(f"{API}/country-stats", timeout=30)
+    assert r.status_code == 200
+    data = r.json()
+    assert isinstance(data, list)
+    assert len(data) > 0
+    s = data[0]
+    for f in ("iso3", "country", "students", "avg_grade"):
+        assert f in s, f"Missing field {f} in country-stats"
+    # Totals should equal 450 unfiltered
+    total = sum(x["students"] for x in data)
+    assert total == 450, f"Expected 450 total students across countries, got {total}"
+    # At least one USA (ISO3=USA) entry
+    iso3s = {x["iso3"] for x in data}
+    assert "USA" in iso3s
+
+
+def test_country_stats_with_course_filter(session):
+    r = session.get(f"{API}/country-stats", params={"course_id": "c1"}, timeout=30)
+    assert r.status_code == 200
+    data = r.json()
+    total = sum(x["students"] for x in data)
+    assert 0 < total < 450
+
+
+# ---------- Iteration 2: date-range cohort filter ----------
+def test_students_last_access_from(session):
+    r = session.get(f"{API}/students", params={"last_access_from": "2025-09-01"}, timeout=60)
+    assert r.status_code == 200
+    data = r.json()
+    # Expected ~289 (tolerance ±15 for randomness / time drift)
+    assert 270 <= len(data) <= 310, f"Expected ~289 students for last_access_from=2025-09-01, got {len(data)}"
+    assert len(data) < 450
+
+
+def test_stats_last_access_range(session):
+    r = session.get(f"{API}/stats", params={"last_access_from": "2025-09-01"}, timeout=30)
+    assert r.status_code == 200
+    d = r.json()
+    assert d["total_students"] < 450
+    assert d["total_students"] > 0
+
+
+def test_hotspots_last_access_range(session):
+    r = session.get(f"{API}/hotspots", params={"last_access_from": "2025-09-01"}, timeout=30)
+    assert r.status_code == 200
+    d = r.json()
+    assert d["count"] < 450
+
+
+def test_country_stats_last_access_range(session):
+    r = session.get(f"{API}/country-stats", params={"last_access_from": "2025-09-01"}, timeout=30)
+    assert r.status_code == 200
+    data = r.json()
+    total = sum(x["students"] for x in data)
+    assert total < 450
+    assert total > 0
+
+
+# ---------- Iteration 2: country_iso3 drill-through ----------
+def test_students_country_iso3_filter(session):
+    r = session.get(f"{API}/students", params={"country_iso3": "USA"}, timeout=60)
+    assert r.status_code == 200
+    data = r.json()
+    assert len(data) > 0
+    for s in data:
+        assert s.get("country_iso3") == "USA"
+        assert s.get("country") == "United States"
+
+
+def test_students_country_iso3_unknown(session):
+    r = session.get(f"{API}/students", params={"country_iso3": "ZZZ"}, timeout=30)
+    assert r.status_code == 200
+    assert r.json() == []
+
+
+# ---------- Iteration 2: ZIP contains privacy/provider.php ----------
+def test_plugin_zip_contains_privacy_provider(session):
+    import io, zipfile
+    r = session.get(f"{BASE_URL}/local_golden.zip", timeout=30)
+    assert r.status_code == 200
+    zf = zipfile.ZipFile(io.BytesIO(r.content))
+    names = zf.namelist()
+    assert any(n.endswith("classes/privacy/provider.php") for n in names), \
+        f"privacy/provider.php not found in ZIP. Files: {names[:20]}"

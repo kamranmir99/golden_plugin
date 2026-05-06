@@ -10,7 +10,9 @@ import math
 from pathlib import Path
 from pydantic import BaseModel, Field
 from typing import List, Optional
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
+
+SEED_VERSION = 3
 
 
 ROOT_DIR = Path(__file__).parent
@@ -79,6 +81,16 @@ COURSES_SEED = [
 ]
 
 # Realistic city anchors (lat, lng, country, country_code, city)
+# ISO_A2 → ISO_A3 mapping for the countries we seed (matches GeoJSON ISO_A3)
+ISO2_TO_ISO3 = {
+    "US": "USA", "GB": "GBR", "FR": "FRA", "DE": "DEU", "ES": "ESP", "IT": "ITA",
+    "RU": "RUS", "IN": "IND", "CN": "CHN", "JP": "JPN", "KR": "KOR", "SG": "SGP",
+    "AU": "AUS", "BR": "BRA", "MX": "MEX", "AR": "ARG", "EG": "EGY", "KE": "KEN",
+    "NG": "NGA", "ZA": "ZAF", "AE": "ARE", "TR": "TUR", "CA": "CAN", "SE": "SWE",
+    "NL": "NLD", "CZ": "CZE", "HU": "HUN", "GR": "GRC", "SA": "SAU", "TH": "THA",
+    "PH": "PHL", "ID": "IDN", "MY": "MYS", "PK": "PAK",
+}
+
 CITY_ANCHORS = [
     (40.7128, -74.0060, "United States", "US", "New York"),
     (34.0522, -118.2437, "United States", "US", "Los Angeles"),
@@ -151,6 +163,15 @@ def random_ip():
 
 
 async def seed_if_empty():
+    # Force reseed when SEED_VERSION changes (schema added country_iso3 + varied last_access)
+    meta = await db.meta.find_one({"_id": "seed"}) or {}
+    current_version = meta.get("version", 0)
+    if current_version != SEED_VERSION:
+        await db.courses.delete_many({})
+        await db.students.delete_many({})
+        await db.meta.replace_one({"_id": "seed"}, {"_id": "seed", "version": SEED_VERSION}, upsert=True)
+        logger.info(f"Seed version changed → reseeding (was {current_version}, now {SEED_VERSION})")
+
     courses_count = await db.courses.count_documents({})
     if courses_count == 0:
         courses = []
@@ -169,20 +190,23 @@ async def seed_if_empty():
         random.seed(42)
         students = []
         courses_list = await db.courses.find({}, {"_id": 0}).to_list(100)
+        now = datetime.now(timezone.utc)
         for i in range(1, 451):
             anchor = random.choice(CITY_ANCHORS)
             lat, lng = jitter(anchor[0], anchor[1])
             fn = random.choice(FIRST_NAMES)
             ln = random.choice(LAST_NAMES)
             enrolled = random.sample([c["id"] for c in courses_list], k=random.randint(2, 5))
-            # Give each country a slight performance bias so thematic maps look meaningful
-            country_bias = (hash(anchor[3]) % 20) - 10  # -10..+9
+            country_bias = (hash(anchor[3]) % 20) - 10
             grades = []
             for cid in enrolled:
                 base = random.gauss(72 + country_bias, 12)
                 g = max(0, min(100, round(base, 1)))
                 grades.append({"course_id": cid, "grade": g})
             overall = round(sum(g["grade"] for g in grades) / len(grades), 2)
+            # Spread last_access across the past 365 days
+            days_ago = random.randint(0, 365)
+            last_access = (now - timedelta(days=days_ago, hours=random.randint(0, 23))).isoformat()
             students.append({
                 "id": f"s{i:04d}",
                 "first_name": fn,
@@ -191,13 +215,14 @@ async def seed_if_empty():
                 "ip": random_ip(),
                 "country": anchor[2],
                 "country_code": anchor[3],
+                "country_iso3": ISO2_TO_ISO3.get(anchor[3], "XXX"),
                 "city": anchor[4],
                 "lat": round(lat, 5),
                 "lng": round(lng, 5),
                 "grades": grades,
                 "overall_grade": overall,
                 "enrolled_courses": enrolled,
-                "last_access": datetime.now(timezone.utc).isoformat(),
+                "last_access": last_access,
             })
         await db.students.insert_many(students)
         logger.info(f"Seeded {len(students)} students")
@@ -220,27 +245,45 @@ async def get_courses():
     return courses
 
 
-@api_router.get("/students")
-async def get_students(
-    course_id: Optional[str] = Query(None),
-    min_grade: float = Query(0),
-    max_grade: float = Query(100),
-):
+def _student_filter_query(course_id, last_access_from, last_access_to):
     query = {}
     if course_id:
         query["enrolled_courses"] = course_id
+    if last_access_from or last_access_to:
+        rng = {}
+        if last_access_from:
+            rng["$gte"] = last_access_from
+        if last_access_to:
+            rng["$lte"] = last_access_to + "T23:59:59"
+        query["last_access"] = rng
+    return query
+
+
+def _effective_grade(s, course_id):
+    if course_id:
+        g = next((x["grade"] for x in s["grades"] if x["course_id"] == course_id), None)
+        return g
+    return s["overall_grade"]
+
+
+@api_router.get("/students")
+async def get_students(
+    course_id: Optional[str] = Query(None),
+    country_iso3: Optional[str] = Query(None),
+    min_grade: float = Query(0),
+    max_grade: float = Query(100),
+    last_access_from: Optional[str] = Query(None),
+    last_access_to: Optional[str] = Query(None),
+):
+    query = _student_filter_query(course_id, last_access_from, last_access_to)
+    if country_iso3:
+        query["country_iso3"] = country_iso3
     docs = await db.students.find(query, {"_id": 0}).to_list(2000)
 
     results = []
     for s in docs:
-        if course_id:
-            grade = next((g["grade"] for g in s["grades"] if g["course_id"] == course_id), None)
-            if grade is None:
-                continue
-            effective_grade = grade
-        else:
-            effective_grade = s["overall_grade"]
-        if effective_grade < min_grade or effective_grade > max_grade:
+        g = _effective_grade(s, course_id)
+        if g is None or g < min_grade or g > max_grade:
             continue
         results.append({
             "id": s["id"],
@@ -250,21 +293,25 @@ async def get_students(
             "ip": s["ip"],
             "country": s["country"],
             "country_code": s["country_code"],
+            "country_iso3": s.get("country_iso3", "XXX"),
             "city": s["city"],
             "lat": s["lat"],
             "lng": s["lng"],
-            "effective_grade": round(effective_grade, 2),
+            "effective_grade": round(g, 2),
             "overall_grade": s["overall_grade"],
             "enrolled_courses": s["enrolled_courses"],
+            "last_access": s["last_access"],
         })
     return results
 
 
 @api_router.get("/stats", response_model=StatsResponse)
-async def get_stats(course_id: Optional[str] = Query(None)):
-    query = {}
-    if course_id:
-        query["enrolled_courses"] = course_id
+async def get_stats(
+    course_id: Optional[str] = Query(None),
+    last_access_from: Optional[str] = Query(None),
+    last_access_to: Optional[str] = Query(None),
+):
+    query = _student_filter_query(course_id, last_access_from, last_access_to)
     docs = await db.students.find(query, {"_id": 0}).to_list(2000)
     courses = await db.courses.find({}, {"_id": 0}).to_list(500)
 
@@ -274,28 +321,23 @@ async def get_stats(course_id: Optional[str] = Query(None)):
             active_courses=len(courses), top_countries=[], grade_distribution=[]
         )
 
-    # per-country
     country_data = {}
     grades_for_avg = []
     for s in docs:
-        if course_id:
-            grade = next((g["grade"] for g in s["grades"] if g["course_id"] == course_id), None)
-            if grade is None:
-                continue
-        else:
-            grade = s["overall_grade"]
-        grades_for_avg.append(grade)
+        g = _effective_grade(s, course_id)
+        if g is None:
+            continue
+        grades_for_avg.append(g)
         c = s["country"]
         country_data.setdefault(c, {"count": 0, "grade_sum": 0})
         country_data[c]["count"] += 1
-        country_data[c]["grade_sum"] += grade
+        country_data[c]["grade_sum"] += g
 
     top_countries = sorted(
         [{"country": k, "students": v["count"], "avg_grade": round(v["grade_sum"]/v["count"], 1)} for k, v in country_data.items()],
         key=lambda x: -x["students"]
     )[:10]
 
-    # grade distribution 0-100 in 10 buckets
     buckets = [0] * 10
     for g in grades_for_avg:
         idx = min(9, int(g // 10))
@@ -312,25 +354,47 @@ async def get_stats(course_id: Optional[str] = Query(None)):
     )
 
 
+@api_router.get("/country-stats")
+async def get_country_stats(
+    course_id: Optional[str] = Query(None),
+    last_access_from: Optional[str] = Query(None),
+    last_access_to: Optional[str] = Query(None),
+):
+    """Per-country aggregates keyed by ISO-3 for the GeoJSON choropleth."""
+    query = _student_filter_query(course_id, last_access_from, last_access_to)
+    docs = await db.students.find(query, {"_id": 0}).to_list(5000)
+    by_iso3 = {}
+    for s in docs:
+        g = _effective_grade(s, course_id)
+        if g is None:
+            continue
+        iso3 = s.get("country_iso3", "XXX")
+        b = by_iso3.setdefault(iso3, {"iso3": iso3, "country": s["country"], "students": 0, "grade_sum": 0.0})
+        b["students"] += 1
+        b["grade_sum"] += g
+    out = []
+    for v in by_iso3.values():
+        v["avg_grade"] = round(v["grade_sum"] / v["students"], 2)
+        del v["grade_sum"]
+        out.append(v)
+    return out
+
+
 @api_router.get("/hotspots")
-async def get_hotspots(course_id: Optional[str] = Query(None), grade_threshold: float = Query(0)):
-    """Return weighted points for Leaflet.heat; weight = inverse of grade for struggling-student hotspots."""
-    query = {}
-    if course_id:
-        query["enrolled_courses"] = course_id
-    docs = await db.students.find(query, {"_id": 0}).to_list(2000)
+async def get_hotspots(
+    course_id: Optional[str] = Query(None),
+    grade_threshold: float = Query(0),
+    last_access_from: Optional[str] = Query(None),
+    last_access_to: Optional[str] = Query(None),
+):
+    query = _student_filter_query(course_id, last_access_from, last_access_to)
+    docs = await db.students.find(query, {"_id": 0}).to_list(5000)
     points = []
     for s in docs:
-        if course_id:
-            grade = next((g["grade"] for g in s["grades"] if g["course_id"] == course_id), None)
-            if grade is None:
-                continue
-        else:
-            grade = s["overall_grade"]
-        if grade < grade_threshold:
+        g = _effective_grade(s, course_id)
+        if g is None or g < grade_threshold:
             continue
-        # Higher weight for struggling students (low grade) to surface support-needs hotspots
-        weight = max(0.1, (100 - grade) / 100.0)
+        weight = max(0.1, (100 - g) / 100.0)
         points.append([s["lat"], s["lng"], round(weight, 3)])
     return {"points": points, "count": len(points)}
 

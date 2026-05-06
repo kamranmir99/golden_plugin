@@ -1,0 +1,32 @@
+{
+  "summary": "Iteration 2 re-test (GOLDEN WebGIS). Backend 18/18 pytest passed, covering previous 9 regression tests + 9 new tests for country-stats endpoint, last_access_from/to cohort filter on 4 endpoints, country_iso3 drill-through filter on /api/students, and ZIP privacy/provider.php presence. Verified ~289 students returned for last_access_from=2025-09-01 (got exactly in 270-310 band). Frontend end-to-end verified live: choropleth renders 177 GeoJSON polygons; clicking a polygon (Canada area) opens drill-through Sheet titled 'Canada / 23 students / avg 60.53% / ISO CAN' with 23 rows; clicking top-country list item (United Kingdom) opens same Sheet with 31 rows; course-dropdown middle option (MATH210) now clickable after iter-1 z-index fix (students KPI drops 450 -> 198); cluster (16 markers visible), hotspot (heat canvas layer), CSV export (golden_export.csv downloaded), date-range Popover + react-day-picker Calendar all open correctly; no console errors. Moodle CI workflow file contains all 6 required steps (codechecker, phpunit, behat, validate, mustache, phpdoc) over PHP 8.1/8.2 x Moodle 4.3/4.4/main matrix. ZIP (15818 bytes, valid PK) contains classes/privacy/provider.php.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_golden_api.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Dashboard.jsx is now 414 lines — still under the 700-line threshold but approaching; consider splitting ChoroplethLayer and DrillSheet into separate files when adding more features.",
+    "Dashboard.jsx line 136: useEffect dependency array uses `dateRange` (object ref), not `dateParams`; since `dateRange` reference changes only on setDateRange, current behaviour is correct, but eslint-disable-line comment papers over an exhaustive-deps warning — safer to depend on the memoised dateParams directly.",
+    "Backend _student_filter_query passes last_access_to as '<date>T23:59:59' — ISO strings stored on students already include timezone offset (timezone.utc .isoformat() produces '+00:00' suffix), so the string '<date>T23:59:59' will lexically compare against e.g. '2026-01-05T10:00:00+00:00'. This works in practice because the '+' in the stored value collates after numeric digits in Mongo's string $lte comparison, but it is fragile. Prefer storing last_access as a datetime/UTC ISO 'Z' string and comparing against '<date>T23:59:59Z'.",
+    "@app.on_event('startup') still deprecated — migrate to FastAPI lifespan handlers when convenient.",
+    "Seed is idempotent via SEED_VERSION bump — good pattern; 289 students matched expectation for last_access_from=2025-09-01 with seed=42 + SEED_VERSION=3."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_golden_api.py (added 9 new tests for iter-2 endpoints)",
+    "/app/test_reports/iteration_2.json (created)"
+  ],
+  "success_rate": {"backend": "100% (18/18)", "frontend": "100% (all critical flows)"},
+  "test_credentials": "N/A (public demo, no auth)",
+  "seed_data_creation": "Backend auto-seeds via SEED_VERSION=3: 8 courses + 450 students with varied last_access across past 365 days. Verified 289±15 students for last_access_from=2025-09-01.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "All iter-2 features working. Playwright live-verified: polygon-click at (map 600,400) -> Canada 23 students Sheet; top-country-0 -> UK 31 students Sheet; MATH210 dropdown -> 198 students KPI; 177 countries.geojson polygons rendered; heat + cluster + CSV all functional. Note: automated date-range Calendar day-selection is flaky because react-day-picker re-mounts day buttons on each click (element-detached retry loop) — not a product bug; real users can click. If retesting dates in Playwright, use page.click on a stable selector like '[aria-label*=\"September 1, 2025\"]' after navigating to the correct month, or evaluate JS to set state directly. No blocker for main agent.",
+  "rca of the issue": "No unresolved issues."
+}

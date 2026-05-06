@@ -9,4 +9,5 @@ export const getCourses = () => api.get("/courses").then((r) => r.data);
 export const getStudents = (params) => api.get("/students", { params }).then((r) => r.data);
 export const getStats = (params) => api.get("/stats", { params }).then((r) => r.data);
 export const getHotspots = (params) => api.get("/hotspots", { params }).then((r) => r.data);
+export const getCountryStats = (params) => api.get("/country-stats", { params }).then((r) => r.data);
 export const getPluginInfo = () => api.get("/plugin-info").then((r) => r.data);
