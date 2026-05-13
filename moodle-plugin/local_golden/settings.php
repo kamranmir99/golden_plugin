@@ -22,7 +22,7 @@ if ($hassiteconfig) {
         get_string('settings_tile_url', 'local_golden'),
         get_string('settings_tile_url_desc', 'local_golden'),
         'https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png',
-        PARAM_URL
+        PARAM_RAW_TRIMMED
     ));
 
     $settings->add(new admin_setting_configtext(
