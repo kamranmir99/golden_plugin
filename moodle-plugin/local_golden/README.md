@@ -20,8 +20,9 @@ All processing is performed locally; **no data ever leaves your Moodle server**.
 - PHP **7.1** or newer (PHP **7.4 / 8.x** also supported)
 - A MaxMind **GeoLite2-City.mmdb** file (free, registration required at
   <https://www.maxmind.com/>)
-- Optional but recommended: `geoip2/geoip2` installed via Composer for the
-  official MaxMind PHP reader.
+
+The official MaxMind DB reader library (Apache 2.0) is **bundled** with the
+plugin under `lib/MaxMind/` — no Composer step is required.
 
 ## Installation
 
@@ -44,10 +45,7 @@ All processing is performed locally; **no data ever leaves your Moodle server**.
 
 4. (Recommended) Install the official reader:
 
-   ```bash
-   cd <MOODLE_ROOT>/local/golden
-   composer require geoip2/geoip2
-   ```
+   That's it — the **MaxMind DB Reader is bundled with the plugin**, no Composer step required.
 
 5. Visit **Site administration → Reports → GOLDEN Map**.
 

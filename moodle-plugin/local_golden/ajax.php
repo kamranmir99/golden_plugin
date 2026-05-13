@@ -20,9 +20,10 @@ $dbpath   = get_config('local_golden', 'geoip_path') ?: ($CFG->dirroot . '/local
 
 $resolver = new \local_golden\geoip_resolver($dbpath);
 if (!$resolver->is_ready()) {
+    $errmsg = $resolver->get_error() ?: get_string('geoip_missing', 'local_golden', $dbpath);
     echo json_encode([
         'error'   => 'geoip_missing',
-        'message' => get_string('geoip_missing', 'local_golden', $dbpath),
+        'message' => $errmsg,
     ]);
     exit;
 }

@@ -1,24 +1,33 @@
 <?php
 // GeoIP resolver for local_golden.
 //
-// Uses MaxMind GeoLite2 database (https://www.maxmind.com/en/geoip2-databases).
-// If the bundled reader library is missing, falls back to a tiny embedded binary
-// reader that supports IPv4 city lookups. For production we recommend installing
-// geoip2/geoip2 via Composer.
+// Bundles the official MaxMind\Db\Reader (Apache-2.0) so no Composer is required.
+// Pure PHP implementation – works on PHP 7.1+ and PHP 8.x.
 
 namespace local_golden;
 
 defined('MOODLE_INTERNAL') || die();
+
+// Load the bundled MaxMind DB Reader once.
+$libdir = __DIR__ . '/../lib/MaxMind/Db';
+require_once($libdir . '/Reader.php');
+require_once($libdir . '/Reader/Decoder.php');
+require_once($libdir . '/Reader/InvalidDatabaseException.php');
+require_once($libdir . '/Reader/Metadata.php');
+require_once($libdir . '/Reader/Util.php');
 
 class geoip_resolver {
 
     /** @var string Absolute path to the .mmdb file. */
     private $dbpath;
 
-    /** @var \GeoIp2\Database\Reader|null */
+    /** @var \MaxMind\Db\Reader|null */
     private $reader = null;
 
-    /** @var array Simple in-request cache: ip => [lat, lng, country, city]. */
+    /** @var string Last error message. */
+    private $error = '';
+
+    /** @var array In-request cache. */
     private static $cache = [];
 
     public function __construct(string $dbpath) {
@@ -27,20 +36,19 @@ class geoip_resolver {
     }
 
     private function init_reader() {
-        if (!is_readable($this->dbpath)) {
+        if (!file_exists($this->dbpath)) {
+            $this->error = 'File not found: ' . $this->dbpath;
             return;
         }
-        // Prefer geoip2/geoip2 if installed (composer autoload).
-        $autoload = __DIR__ . '/../vendor/autoload.php';
-        if (file_exists($autoload)) {
-            require_once($autoload);
+        if (!is_readable($this->dbpath)) {
+            $this->error = 'File not readable (check permissions): ' . $this->dbpath;
+            return;
         }
-        if (class_exists('\\GeoIp2\\Database\\Reader')) {
-            try {
-                $this->reader = new \GeoIp2\Database\Reader($this->dbpath);
-            } catch (\Exception $e) {
-                $this->reader = null;
-            }
+        try {
+            $this->reader = new \MaxMind\Db\Reader($this->dbpath);
+        } catch (\Throwable $e) {
+            $this->error  = 'MaxMind DB error: ' . $e->getMessage();
+            $this->reader = null;
         }
     }
 
@@ -48,14 +56,18 @@ class geoip_resolver {
         return $this->reader !== null;
     }
 
+    public function get_error(): string {
+        return $this->error;
+    }
+
     /**
-     * Resolve a single IP.
+     * Resolve a single IP to coordinates.
      *
      * @param string $ip
-     * @return array|null [lat, lng, country, country_code, city]
+     * @return array|null [lat, lng, country, country_code, country_iso3, city]
      */
-    public function lookup(string $ip): ?array {
-        if (empty($ip) || $ip === '0.0.0.0') {
+    public function lookup(string $ip) {
+        if (empty($ip) || $ip === '0.0.0.0' || $ip === '::1' || $ip === '127.0.0.1') {
             return null;
         }
         if (isset(self::$cache[$ip])) {
@@ -65,21 +77,36 @@ class geoip_resolver {
             return null;
         }
         try {
-            $record = $this->reader->city($ip);
-            $result = [
-                'lat'          => $record->location->latitude,
-                'lng'          => $record->location->longitude,
-                'country'      => $record->country->name ?? 'Unknown',
-                'country_code' => $record->country->isoCode ?? 'XX',
-                'city'         => $record->city->name ?? 'Unknown',
-            ];
-            if ($result['lat'] === null || $result['lng'] === null) {
-                return null;
-            }
-            self::$cache[$ip] = $result;
-            return $result;
-        } catch (\Exception $e) {
+            $record = $this->reader->get($ip);
+        } catch (\Throwable $e) {
             return null;
         }
+        if (!is_array($record)) {
+            return null;
+        }
+
+        $loc      = isset($record['location']) ? $record['location'] : [];
+        $country  = isset($record['country']) ? $record['country'] : [];
+        $city     = isset($record['city']) ? $record['city'] : [];
+
+        $lat = isset($loc['latitude'])  ? (float)$loc['latitude']  : null;
+        $lng = isset($loc['longitude']) ? (float)$loc['longitude'] : null;
+        if ($lat === null || $lng === null) {
+            return null;
+        }
+
+        $cname  = isset($country['names']['en']) ? $country['names']['en'] : 'Unknown';
+        $iso2   = isset($country['iso_code'])    ? $country['iso_code']    : 'XX';
+        $cityn  = isset($city['names']['en'])    ? $city['names']['en']    : 'Unknown';
+
+        $result = [
+            'lat'          => $lat,
+            'lng'          => $lng,
+            'country'      => $cname,
+            'country_code' => $iso2,
+            'city'         => $cityn,
+        ];
+        self::$cache[$ip] = $result;
+        return $result;
     }
 }
