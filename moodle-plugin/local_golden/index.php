@@ -2,14 +2,16 @@
 // Main GOLDEN dashboard page (admin-only).
 
 require_once(__DIR__ . '/../../config.php');
+require_once($CFG->libdir . '/adminlib.php');
 
-require_login();
+// Hooks the page into the admin tree (Site admin → Reports → GOLDEN Map).
+admin_externalpage_setup('local_golden_report');
+
 $context = context_system::instance();
 require_capability('local/golden:view', $context);
 
 $PAGE->set_context($context);
 $PAGE->set_url(new moodle_url('/local/golden/index.php'));
-$PAGE->set_pagelayout('admin');
 $PAGE->set_title(get_string('page_title', 'local_golden'));
 $PAGE->set_heading(get_string('pluginname', 'local_golden'));
 

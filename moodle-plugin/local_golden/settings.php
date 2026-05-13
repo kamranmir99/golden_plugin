@@ -4,6 +4,16 @@
 defined('MOODLE_INTERNAL') || die();
 
 if ($hassiteconfig) {
+
+    // 1) Link under Site administration → Reports → GOLDEN Map
+    $ADMIN->add('reports', new admin_externalpage(
+        'local_golden_report',
+        get_string('nav_golden', 'local_golden'),
+        new moodle_url('/local/golden/index.php'),
+        'local/golden:view'
+    ));
+
+    // 2) Plugin settings page under Site administration → Plugins → Local plugins
     $settings = new admin_settingpage('local_golden', get_string('pluginname', 'local_golden'));
     $ADMIN->add('localplugins', $settings);
 
