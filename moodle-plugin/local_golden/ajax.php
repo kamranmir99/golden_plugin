@@ -7,6 +7,9 @@
 
 define('AJAX_SCRIPT', true);
 require_once(__DIR__ . '/../../config.php');
+require_once($CFG->libdir . '/gradelib.php');
+require_once($CFG->libdir . '/grade/grade_item.php');
+require_once($CFG->libdir . '/enrollib.php');
 require_once(__DIR__ . '/classes/geoip_resolver.php');
 require_once(__DIR__ . '/classes/data_service.php');
 

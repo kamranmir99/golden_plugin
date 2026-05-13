@@ -15,7 +15,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'local_golden';
-$plugin->version   = 2026020900;   // YYYYMMDDXX
+$plugin->version   = 2026021000;   // YYYYMMDDXX
 $plugin->requires  = 2019111800;   // Moodle 3.8.0
 $plugin->maturity  = MATURITY_STABLE;
-$plugin->release   = '1.2.1';
+$plugin->release   = '1.2.2';

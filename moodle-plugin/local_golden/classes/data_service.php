@@ -9,10 +9,18 @@ namespace local_golden;
 
 defined('MOODLE_INTERNAL') || die();
 
-global $CFG;
-require_once($CFG->libdir . '/gradelib.php');
-
 class data_service {
+
+    /**
+     * Ensure Moodle's gradelib.php is loaded.
+     * Calling require_once is cheap; doing it lazily inside each method
+     * removes any ordering issues caused by Moodle's class autoloader.
+     */
+    private static function require_gradelib() {
+        global $CFG;
+        require_once($CFG->libdir . '/gradelib.php');
+        require_once($CFG->libdir . '/grade/grade_item.php');
+    }
 
     /**
      * Return all courses (id, shortname, fullname).
@@ -42,10 +50,12 @@ class data_service {
      * Return users, optionally filtered by enrolment in a course.
      */
     public static function list_users($courseid, int $max = 5000): array {
-        global $DB;
+        global $DB, $CFG;
+        require_once($CFG->libdir . '/enrollib.php');
+
         if (!empty($courseid)) {
             $context = \context_course::instance((int)$courseid);
-            [$esql, $params] = \get_enrolled_sql($context, '', 0, true);
+            list($esql, $params) = \get_enrolled_sql($context, '', 0, true);
             $sql = "SELECT u.id, u.firstname, u.lastname, u.email, u.lastip
                       FROM {user} u
                       JOIN ($esql) je ON je.id = u.id
@@ -77,7 +87,12 @@ class data_service {
      * Get final grade for a user in a course (0-100, or null).
      */
     public static function course_grade(int $userid, int $courseid) {
-        // Backslash prefix is required because we are inside the local_golden namespace.
+        self::require_gradelib();
+
+        if (!function_exists('grade_get_course_grade')) {
+            return null;
+        }
+
         $grade = \grade_get_course_grade($userid, $courseid);
         if (empty($grade) || !isset($grade->grade) || $grade->grade === null || $grade->grade === false) {
             return null;
