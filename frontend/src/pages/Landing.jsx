@@ -48,7 +48,7 @@ export default function Landing() {
         <div className="absolute inset-0 grid-bg opacity-40" />
         <div className="relative max-w-6xl mx-auto">
           <Badge variant="outline" className="border-[#00E5FF]/40 bg-[#00E5FF]/5 text-[#00E5FF] font-mono text-xs tracking-widest uppercase mb-6" data-testid="hero-badge">
-            Moodle 4.3+ Local Plugin · v2026.02.01
+            Moodle 3.8+ Local Plugin · v2026.02.07
           </Badge>
           <h1 className="font-heading font-black text-5xl sm:text-6xl lg:text-7xl tracking-[-0.04em] leading-[0.95] max-w-4xl mb-6" data-testid="hero-title">
             See every learner<br />
@@ -164,9 +164,9 @@ export default function Landing() {
               GOLDEN · Geospatial mOdeL for Distance EducatioN
             </div>
             <div className="flex sm:justify-end items-center gap-3 text-xs text-[#666F7F]">
-              <span className="font-mono">Moodle 4.3+</span>
+              <span className="font-mono">Moodle 3.8+</span>
               <span>·</span>
-              <span className="font-mono">PHP 8.1+</span>
+              <span className="font-mono">PHP 7.1+</span>
               <span>·</span>
               <span className="font-mono">GPL v3</span>
             </div>

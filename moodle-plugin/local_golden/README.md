@@ -16,8 +16,8 @@ All processing is performed locally; **no data ever leaves your Moodle server**.
 
 ## Requirements
 
-- Moodle **4.3** or newer
-- PHP **8.1** or newer
+- Moodle **3.8** or newer
+- PHP **7.1** or newer (PHP **7.4 / 8.x** also supported)
 - A MaxMind **GeoLite2-City.mmdb** file (free, registration required at
   <https://www.maxmind.com/>)
 - Optional but recommended: `geoip2/geoip2` installed via Composer for the

@@ -404,8 +404,8 @@ async def plugin_info():
     return {
         "name": "local_golden",
         "display_name": "GOLDEN – Geospatial Model for Distance Education",
-        "version": "2026020100",
-        "moodle_min": "4.3",
+        "version": "2026020700",
+        "moodle_min": "3.8",
         "download": "/local_golden.zip",
         "description": "Admin-only WebGIS plugin that geolocates Moodle users by IP and renders cluster, choropleth and hotspot maps.",
     }
