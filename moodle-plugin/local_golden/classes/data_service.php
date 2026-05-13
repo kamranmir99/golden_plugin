@@ -1,11 +1,16 @@
 <?php
 // Data service for local_golden – reads users, grades, courses.
+//
+// @package    local_golden
+// @copyright  2026 Kamran Mir <kmir.phd21igis@student.nust.edu.pk>
+// @license    https://www.gnu.org/licenses/gpl-3.0.html GNU GPL v3 or later
 
 namespace local_golden;
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($GLOBALS['CFG']->libdir . '/gradelib.php');
+global $CFG;
+require_once($CFG->libdir . '/gradelib.php');
 
 class data_service {
 
@@ -35,16 +40,12 @@ class data_service {
 
     /**
      * Return users, optionally filtered by enrolment in a course.
-     *
-     * @param int|null $courseid
-     * @param int      $max
-     * @return array of user rows with id, firstname, lastname, email, lastip
      */
-    public static function list_users(?int $courseid, int $max = 5000): array {
+    public static function list_users($courseid, int $max = 5000): array {
         global $DB;
-        if ($courseid) {
-            $context = \context_course::instance($courseid);
-            [$esql, $params] = get_enrolled_sql($context, 'mod/assign:submit', 0, true);
+        if (!empty($courseid)) {
+            $context = \context_course::instance((int)$courseid);
+            [$esql, $params] = \get_enrolled_sql($context, '', 0, true);
             $sql = "SELECT u.id, u.firstname, u.lastname, u.email, u.lastip
                       FROM {user} u
                       JOIN ($esql) je ON je.id = u.id
@@ -65,7 +66,7 @@ class data_service {
                 'firstname' => $r->firstname,
                 'lastname'  => $r->lastname,
                 'email'     => $r->email,
-                'lastip'    => trim($r->lastip),
+                'lastip'    => trim((string)$r->lastip),
             ];
         }
         $rs->close();
@@ -75,13 +76,12 @@ class data_service {
     /**
      * Get final grade for a user in a course (0-100, or null).
      */
-    public static function course_grade(int $userid, int $courseid): ?float {
-        $grade = grade_get_course_grade($userid, $courseid);
-        if (!$grade || !isset($grade->grade) || $grade->grade === null) {
+    public static function course_grade(int $userid, int $courseid) {
+        // Backslash prefix is required because we are inside the local_golden namespace.
+        $grade = \grade_get_course_grade($userid, $courseid);
+        if (empty($grade) || !isset($grade->grade) || $grade->grade === null || $grade->grade === false) {
             return null;
         }
-        $gradeinfo = \grade_get_grades($courseid, 'course', 0, 0, [$userid]);
-        // Normalise to 0-100 using grade_item max if available.
         $item = \grade_item::fetch_course_item($courseid);
         if ($item && $item->grademax > 0) {
             return round(((float)$grade->grade / (float)$item->grademax) * 100, 2);
@@ -92,7 +92,7 @@ class data_service {
     /**
      * Compute a user's overall grade as the mean of their final course grades.
      */
-    public static function overall_grade(int $userid): ?float {
+    public static function overall_grade(int $userid) {
         global $DB;
         $courseids = $DB->get_fieldset_sql(
             "SELECT DISTINCT c.id
