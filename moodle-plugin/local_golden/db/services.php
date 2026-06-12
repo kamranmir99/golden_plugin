@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * Version metadata for local_golden.
+ * External Services declaration for local_golden.
  *
  * @package    local_golden
  * @copyright  2026 Kamran Mir <kmir.phd21igis@student.nust.edu.pk>, IGIS, NUST, Islamabad
@@ -24,8 +24,17 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->component = 'local_golden';
-$plugin->version   = 2026021100;   // YYYYMMDDXX.
-$plugin->requires  = 2019111800;   // Moodle 3.8.0.
-$plugin->maturity  = MATURITY_STABLE;
-$plugin->release   = '2.0.0';
+$functions = [
+    'local_golden_get_map_data' => [
+        'classname'     => 'local_golden\\external\\get_map_data',
+        'methodname'    => 'execute',
+        'classpath'     => '',
+        'description'   => 'Return geolocated users and stats for the GOLDEN map.',
+        'type'          => 'read',
+        'ajax'          => true,
+        'capabilities'  => 'local/golden:view',
+        'loginrequired' => true,
+    ],
+];
+
+$services = [];

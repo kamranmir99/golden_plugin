@@ -1,29 +1,50 @@
 <?php
-// Data service for local_golden – reads users, grades, courses.
+// This file is part of Moodle - https://moodle.org/
 //
-// @package    local_golden
-// @copyright  2026 Kamran Mir <kmir.phd21igis@student.nust.edu.pk>
-// @license    https://www.gnu.org/licenses/gpl-3.0.html GNU GPL v3 or later
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+
+/**
+ * Data service for local_golden – courses, users, grades.
+ *
+ * @package    local_golden
+ * @copyright  2026 Kamran Mir <kmir.phd21igis@student.nust.edu.pk>, IGIS, NUST, Islamabad
+ * @license    https://www.gnu.org/licenses/gpl-3.0.html GNU GPL v3 or later
+ */
 
 namespace local_golden;
 
 defined('MOODLE_INTERNAL') || die();
 
+/**
+ * Read-only helper that aggregates Moodle data for the GOLDEN dashboard.
+ */
 class data_service {
 
     /**
-     * Ensure Moodle's gradelib.php is loaded.
-     * Calling require_once is cheap; doing it lazily inside each method
-     * removes any ordering issues caused by Moodle's class autoloader.
+     * Ensure Moodle's grading + enrolment libs are loaded.
      */
-    private static function require_gradelib() {
+    private static function require_libs() {
         global $CFG;
         require_once($CFG->libdir . '/gradelib.php');
         require_once($CFG->libdir . '/grade/grade_item.php');
+        require_once($CFG->libdir . '/enrollib.php');
     }
 
     /**
-     * Return all courses (id, shortname, fullname).
+     * Return all visible courses (id, code, name, category).
+     *
+     * @return array
      */
     public static function list_courses(): array {
         global $DB;
@@ -47,11 +68,15 @@ class data_service {
     }
 
     /**
-     * Return users, optionally filtered by enrolment in a course.
+     * Return active users, optionally restricted to one course's enrolees.
+     *
+     * @param int|null $courseid
+     * @param int      $max
+     * @return array
      */
     public static function list_users($courseid, int $max = 5000): array {
-        global $DB, $CFG;
-        require_once($CFG->libdir . '/enrollib.php');
+        global $DB;
+        self::require_libs();
 
         if (!empty($courseid)) {
             $context = \context_course::instance((int)$courseid);
@@ -68,7 +93,7 @@ class data_service {
                   ORDER BY lastaccess DESC";
             $params = [];
         }
-        $rs = $DB->get_recordset_sql($sql, $params, 0, $max);
+        $rs   = $DB->get_recordset_sql($sql, $params, 0, $max);
         $rows = [];
         foreach ($rs as $r) {
             $rows[] = [
@@ -84,11 +109,14 @@ class data_service {
     }
 
     /**
-     * Get final grade for a user in a course (0-100, or null).
+     * Final percentage grade for a user in a course (0-100, or null).
+     *
+     * @param int $userid
+     * @param int $courseid
+     * @return float|null
      */
     public static function course_grade(int $userid, int $courseid) {
-        self::require_gradelib();
-
+        self::require_libs();
         if (!function_exists('grade_get_course_grade')) {
             return null;
         }
@@ -105,7 +133,10 @@ class data_service {
     }
 
     /**
-     * Compute a user's overall grade as the mean of their final course grades.
+     * Mean of a user's final course grades (or null).
+     *
+     * @param int $userid
+     * @return float|null
      */
     public static function overall_grade(int $userid) {
         global $DB;

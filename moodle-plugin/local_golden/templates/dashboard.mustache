@@ -1,0 +1,101 @@
+{{!
+    This file is part of Moodle - https://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+}}
+{{!
+    @template local_golden/dashboard
+
+    GOLDEN admin dashboard – Leaflet WebGIS of geolocated learners.
+
+    Context variables required for this template:
+    * courses      - array of {id, code, name}
+    * coursecount  - int
+    * creditline   - localised maintainer credit
+    * authoremail  - maintainer email
+
+    Example context (json):
+    {
+        "courses":     [{"id": 1, "code": "CS101", "name": "Intro CS"}],
+        "coursecount": 1,
+        "creditline":  "Maintained by Kamran Mir, IGIS, NUST · kmir@example.org",
+        "authoremail": "kmir@example.org"
+    }
+
+    @copyright  2026 Kamran Mir, IGIS, NUST, Islamabad
+    @license    https://www.gnu.org/licenses/gpl-3.0.html GNU GPL v3 or later
+}}
+<div id="golden-root">
+    <div class="golden-map" id="golden-map"></div>
+
+    <aside class="golden-sidebar">
+        <div class="golden-panel">
+            <div class="golden-label">{{#str}}label_metrics, local_golden{{/str}}</div>
+            <div class="golden-kpis">
+                <div>
+                    <span class="golden-kpi-label">{{#str}}kpi_students, local_golden{{/str}}</span>
+                    <span class="golden-kpi" id="kpi-students">—</span>
+                </div>
+                <div>
+                    <span class="golden-kpi-label">{{#str}}kpi_countries, local_golden{{/str}}</span>
+                    <span class="golden-kpi" id="kpi-countries">—</span>
+                </div>
+                <div>
+                    <span class="golden-kpi-label">{{#str}}kpi_avg_grade, local_golden{{/str}}</span>
+                    <span class="golden-kpi golden-accent" id="kpi-avg">—</span>
+                </div>
+                <div>
+                    <span class="golden-kpi-label">{{#str}}kpi_courses, local_golden{{/str}}</span>
+                    <span class="golden-kpi" id="kpi-courses">{{coursecount}}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="golden-panel">
+            <div class="golden-label">{{#str}}label_filters, local_golden{{/str}}</div>
+
+            <label class="golden-sublabel" for="golden-course">{{#str}}filter_course, local_golden{{/str}}</label>
+            <select id="golden-course" class="golden-input">
+                <option value="0">{{#str}}all_courses, local_golden{{/str}}</option>
+                {{#courses}}
+                    <option value="{{id}}">{{code}} — {{name}}</option>
+                {{/courses}}
+            </select>
+
+            <label class="golden-sublabel">{{#str}}filter_mode, local_golden{{/str}}</label>
+            <div class="golden-toggle" role="tablist">
+                <button type="button" data-mode="cluster"    class="is-active">{{#str}}mode_cluster, local_golden{{/str}}</button>
+                <button type="button" data-mode="choropleth">{{#str}}mode_choropleth, local_golden{{/str}}</button>
+                <button type="button" data-mode="hotspot">{{#str}}mode_hotspot, local_golden{{/str}}</button>
+            </div>
+
+            <label class="golden-sublabel" for="golden-min">{{#str}}filter_grade, local_golden{{/str}}</label>
+            <div class="golden-range">
+                <input type="number" id="golden-min" min="0" max="100" value="0"   class="golden-input">
+                <span>–</span>
+                <input type="number" id="golden-max" min="0" max="100" value="100" class="golden-input">
+                <button type="button" id="golden-apply" class="golden-btn-primary">{{#str}}apply, local_golden{{/str}}</button>
+            </div>
+        </div>
+
+        <div class="golden-panel">
+            <div class="golden-label">{{#str}}label_top_countries, local_golden{{/str}}</div>
+            <ol id="golden-top-countries" class="golden-list"></ol>
+        </div>
+    </aside>
+</div>
+
+<div class="golden-credit">
+    <span>{{creditline}}</span>
+</div>
