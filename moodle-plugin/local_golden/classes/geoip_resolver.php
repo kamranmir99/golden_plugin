@@ -29,18 +29,41 @@ namespace local_golden;
 
 defined('MOODLE_INTERNAL') || die();
 
-// Load the bundled MaxMind DB Reader once.
-$libdir = __DIR__ . '/../lib/MaxMind/Db';
-require_once($libdir . '/Reader.php');
-require_once($libdir . '/Reader/Decoder.php');
-require_once($libdir . '/Reader/InvalidDatabaseException.php');
-require_once($libdir . '/Reader/Metadata.php');
-require_once($libdir . '/Reader/Util.php');
-
 /**
  * Pure-PHP IP → coordinate resolver backed by MaxMind GeoLite2.
  */
 class geoip_resolver {
+
+    /** @var bool Whether the MaxMind SPL autoloader has been registered. */
+    private static $autoloaderregistered = false;
+
+    /**
+     * Register a lazy autoloader for the bundled MaxMind\Db\* classes.
+     *
+     * Moodle's class autoloader only handles classes inside the plugin's
+     * own namespace (local_golden\). The bundled third-party MaxMind reader
+     * uses its own MaxMind\Db namespace, so we register a small dedicated
+     * SPL autoloader that resolves those classes from lib/MaxMind/Db/.
+     * This avoids the previous flat require_once chain.
+     */
+    private static function register_maxmind_autoloader() {
+        if (self::$autoloaderregistered) {
+            return;
+        }
+        self::$autoloaderregistered = true;
+        $libroot = __DIR__ . '/../lib';
+        spl_autoload_register(function($class) use ($libroot) {
+            $prefix = 'MaxMind\\Db\\';
+            if (strncmp($class, $prefix, strlen($prefix)) !== 0) {
+                return;
+            }
+            $relative = substr($class, strlen($prefix));
+            $file = $libroot . '/MaxMind/Db/' . str_replace('\\', '/', $relative) . '.php';
+            if (is_readable($file)) {
+                require_once($file);
+            }
+        });
+    }
 
     /** @var string Absolute path to the .mmdb file. */
     private $dbpath;
@@ -60,6 +83,7 @@ class geoip_resolver {
      * @param string $dbpath
      */
     public function __construct(string $dbpath) {
+        self::register_maxmind_autoloader();
         $this->dbpath = $dbpath;
         $this->init_reader();
     }

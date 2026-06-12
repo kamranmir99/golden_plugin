@@ -31,8 +31,6 @@ require_once($CFG->libdir . '/externallib.php');
 require_once($CFG->libdir . '/gradelib.php');
 require_once($CFG->libdir . '/grade/grade_item.php');
 require_once($CFG->libdir . '/enrollib.php');
-require_once($CFG->dirroot . '/local/golden/classes/geoip_resolver.php');
-require_once($CFG->dirroot . '/local/golden/classes/data_service.php');
 
 use external_api;
 use external_function_parameters;
